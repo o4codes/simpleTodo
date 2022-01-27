@@ -25,7 +25,7 @@ class TodoCreateRetrieve(APIView):
     
     def get(self, request, format=None):
         todos = Todo.objects.filter(user = request.user)
-        serializer = Todo(todos, many=True)
+        serializer = TodoSerializer(todos, many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
 class TodoDetails(APIView):
@@ -40,13 +40,13 @@ class TodoDetails(APIView):
     def get(self, request, id):
         todo = Todo.objects.get(id = id)
         if todo.user == request.user:
-            serializer = Todo(todo)
+            serializer = TodoSerializer(todo)
             return Response(serializer.data, status = status.HTTP_200_OK)
         return Response(data = {"error":"Unauthorised"}, status = status.HTTP_401_UNAUTHORIZED)
     
     def put(self, request, id):
         todo = Todo.objects.get(id = id)
-        serializer = Todo(todo, data = request.data)
+        serializer = TodoSerializer(todo, data = request.data)
         if todo.user == request.user:
             if serializer.is_valid():
                 serializer.save()
