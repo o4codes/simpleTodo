@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from .models import Todo
 from .serializers import TodoSerializer
 from rest_framework import status
+from django.shortcuts import get_list_or_404, get_object_or_404
 
 # Create your views here.
 class TodoCreateRetrieve(APIView):
@@ -24,7 +25,7 @@ class TodoCreateRetrieve(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request, format=None):
-        todos = Todo.objects.filter(user = request.user)
+        todos = get_list_or_404(Todo, user = request.User)
         serializer = TodoSerializer(todos, many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)
     
@@ -38,14 +39,14 @@ class TodoDetails(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, id):
-        todo = Todo.objects.get(id = id)
+        todo = get_object_or_404(Todo, id=id)
         if todo.user == request.user:
             serializer = TodoSerializer(todo)
             return Response(serializer.data, status = status.HTTP_200_OK)
         return Response(data = {"error":"Unauthorised"}, status = status.HTTP_401_UNAUTHORIZED)
     
     def put(self, request, id):
-        todo = Todo.objects.get(id = id)
+        todo = get_object_or_404(Todo, id=id)
         serializer = TodoSerializer(todo, data = request.data)
         if todo.user == request.user:
             if serializer.is_valid():
@@ -55,7 +56,7 @@ class TodoDetails(APIView):
         return Response(data = {"error":"Unauthorised"}, status = status.HTTP_401_UNAUTHORIZED)
     
     def delete(self, request, id):
-        todo = Todo.objects.get(id = id)
+        todo = get_object_or_404(Todo, id=id)
         if todo.user == request.user:
             todo.delete()
             return Response(data = {"message":"delete successs"}, status=status.HTTP_204_NO_CONTENT)
